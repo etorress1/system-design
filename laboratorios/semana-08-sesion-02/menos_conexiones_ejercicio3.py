@@ -9,14 +9,42 @@ comparar los dos algoritmos con el mismo trafico.
 """
 
 
+# class BalanceadorMenosConexiones:
+#     def __init__(self, servidores):
+#         self.servidores = servidores
+
+#     def enviar(self, duracion):
+#         # TODO: elige, entre los servidores sanos que todavia pueden
+#         # atender, el que tiene menos conexiones activas en este momento.
+#         # Si hay empate, gana el que aparece primero en la lista.
+#         # Enviale la solicitud y devuelve su nombre. Si ningun servidor
+#         # puede atenderla, devuelve None.
+#         raise NotImplementedError
+
+
 class BalanceadorMenosConexiones:
     def __init__(self, servidores):
         self.servidores = servidores
 
-    def enviar(self, duracion):
-        # TODO: elige, entre los servidores sanos que todavia pueden
-        # atender, el que tiene menos conexiones activas en este momento.
-        # Si hay empate, gana el que aparece primero en la lista.
-        # Enviale la solicitud y devuelve su nombre. Si ningun servidor
-        # puede atenderla, devuelve None.
-        raise NotImplementedError
+ def enviar(self, duracion):
+    servidor_elegido = None
+    menos_conexiones = float("inf")
+
+    for servidor in self.servidores:
+        if not servidor.health_check():
+            continue
+
+        if servidor.conexiones_activas() >= servidor.capacidad:
+            continue
+
+        conexiones = servidor.conexiones_activas()
+
+        if conexiones < menos_conexiones:
+            servidor_elegido = servidor
+            menos_conexiones = conexiones
+
+    if servidor_elegido is None:
+        return None
+
+    servidor_elegido.atender(duracion)
+    return servidor_elegido.nombre
