@@ -8,43 +8,31 @@ Las pruebas tambien usan tu BalanceadorRoundRobin del Ejercicio 2, para
 comparar los dos algoritmos con el mismo trafico.
 """
 
-
-# class BalanceadorMenosConexiones:
-#     def __init__(self, servidores):
-#         self.servidores = servidores
-
-#     def enviar(self, duracion):
-#         # TODO: elige, entre los servidores sanos que todavia pueden
-#         # atender, el que tiene menos conexiones activas en este momento.
-#         # Si hay empate, gana el que aparece primero en la lista.
-#         # Enviale la solicitud y devuelve su nombre. Si ningun servidor
-#         # puede atenderla, devuelve None.
-#         raise NotImplementedError
-
-
 class BalanceadorMenosConexiones:
-    def __init__(self, servidores):
+   def _init_(self, servidores):
         self.servidores = servidores
 
- def enviar(self, duracion):
-    servidor_elegido = None
-    menos_conexiones = float("inf")
+        def enviar(self, duracion):
+        # TODO: elige, entre los servidores sanos que todavia pueden
+        # atender, el que tiene menos conexiones activas en este momento.
+        # Si hay empate, gana el que aparece primero en la lista.
+        # Enviale la solicitud y devuelve su nombre. Si ningun servidor
+        # puede atenderla, devuelve None.
 
-    for servidor in self.servidores:
-        if not servidor.health_check():
-            continue
+       
+            mejor_servidor = None
+            min_conexiones = float("inf")
 
-        if servidor.conexiones_activas() >= servidor.capacidad:
-            continue
+            for servidor in self.servidores:
+                if servidor.health_check() and servidor.puede_atender():
+                    if servidor.conexiones_activas() < min_conexiones:
+                        min_conexiones = servidor.conexiones_activas()
+                        mejor_servidor = servidor
 
-        conexiones = servidor.conexiones_activas()
-
-        if conexiones < menos_conexiones:
-            servidor_elegido = servidor
-            menos_conexiones = conexiones
-
-    if servidor_elegido is None:
+            if mejor_servidor is None:
+                return None
+            else:
+                if mejor_servidor.atender(duracion):
+                    return mejor_servidor.nombre
+            
         return None
-
-    servidor_elegido.atender(duracion)
-    return servidor_elegido.nombre

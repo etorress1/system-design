@@ -1,4 +1,6 @@
-"""Ejercicio 1: repartir las reservas de ReservaU en 4 shards, uno por
+
+"""
+Ejercicio 1: repartir las reservas de ReservaU en 4 shards, uno por
 campus (reparto por lista).
 
 Corre esto para ver el resultado:
@@ -25,7 +27,7 @@ def shard_por_campus(reserva):
 
 
 def contar_por_shard(reservas, cantidad_de_shards):
-    contar = [0 for _ in range(cantidad_de_shards)]
+    contar = [0 for i in range(cantidad_de_shards)]
 
     for reserva in reservas:
         shard = shard_por_campus(reserva)
@@ -43,5 +45,5 @@ if __name__ == "__main__":
         max(conteo),
         "de",
         sum(conteo),
-        "reservas",
+        "reservas"
     )

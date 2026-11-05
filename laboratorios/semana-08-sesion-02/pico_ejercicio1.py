@@ -9,6 +9,7 @@ Y las pruebas con:
     pytest test_pico_ejercicio1.py
 """
 
+
 from servidor import Servidor
 
 
@@ -18,22 +19,14 @@ def simular_pico(servidor, cantidad, duracion):
     # una y otra (llegan todas en el mismo segundo). Cuenta cuantas
     # atendio el servidor y cuantas rechazo, y devuelve las dos cuentas
     # como una tupla (atendidas, rechazadas).
-
-
-
     peticiones_atendidas = 0
 
     for peticion in range(cantidad):
         if servidor.atender(duracion):
             peticiones_atendidas +=1
-
-        return peticiones_atendidas. cmsmsoad
     
-
-
-    raise NotImplementedError
-
-
+    return (peticiones_atendidas, cantidad - peticiones_atendidas)
+ 
 if __name__ == "__main__":
     print("Escenario A, un servidor de capacidad 100:")
     print(simular_pico(Servidor("unico", 100), 250, 5))
