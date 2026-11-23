@@ -29,12 +29,12 @@ class Reserva:
 
 
 def motivo_de_rechazo(cancha, hora, hora_ocupada, reservas_del_dia):
-    """Devuelve None si la reserva se puede hacer, o el motivo del rechazo.
-
-    hora_ocupada: True si esa cancha ya tiene reserva a esa hora ese dia.
-    reservas_del_dia: cuantas reservas tiene ya el estudiante ese dia.
-    """
-    # TODO 1: las cuatro reglas de reservas_acopladas.py, en el mismo
-    # orden, sin SQL ni codigos HTTP: "cancha desconocida",
-    # "fuera del horario", "hora ocupada", "limite diario alcanzado".
+    if cancha not in CANCHAS:
+        return "cancha desconocida"
+    if hora not in HORAS_DEL_DIA:
+        return "fuera del horario"
+    if hora_ocupada:
+        return "hora ocupada"
+    if reservas_del_dia >= MAXIMO_RESERVAS_POR_DIA:
+        return "limite diario alcanzado"
     return None
