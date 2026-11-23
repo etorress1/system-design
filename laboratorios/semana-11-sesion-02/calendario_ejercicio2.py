@@ -33,34 +33,43 @@ class CalendarioDeCancha:
         self._reservas = {}
 
     def horas_de(self, estudiante):
-        # TODO 1: cuantas horas suman las reservas del estudiante en este
-        # calendario.
-        raise NotImplementedError
+        total = 0
+        for reserva in self._reservas.values():
+            if reserva.estudiante == estudiante:
+                total = total + reserva.franja.duracion()
+        return total
+
+    def _validar(self, franja, estudiante, ignorar_id):
+        for id_otra, otra in self._reservas.items():
+            if id_otra != ignorar_id and franja.se_solapa_con(otra.franja):
+                raise ValueError("franja ocupada")
+        horas = 0
+        for id_otra, otra in self._reservas.items():
+            if id_otra != ignorar_id and otra.estudiante == estudiante:
+                horas = horas + otra.franja.duracion()
+        if horas + franja.duracion() > MAXIMO_HORAS_POR_ESTUDIANTE:
+            raise ValueError("limite de horas alcanzado")
 
     def reservar(self, id_reserva, estudiante, inicio, fin):
-        # TODO 2: crea la FranjaHoraria con la fecha del calendario (si es
-        # invalida, su propio ValueError basta) y, en este orden:
-        # - id ya usado en este calendario: ValueError("id repetido");
-        # - se solapa con otra reserva: ValueError("franja ocupada");
-        # - el estudiante pasaria de MAXIMO_HORAS_POR_ESTUDIANTE:
-        #   ValueError("limite de horas alcanzado").
-        # Si todo se cumple, guarda la Reserva en self._reservas por su id.
-        raise NotImplementedError
+        franja = FranjaHoraria(self.fecha, inicio, fin)
+        if id_reserva in self._reservas:
+            raise ValueError("id repetido")
+        self._validar(franja, estudiante, None)
+        self._reservas[id_reserva] = Reserva(id_reserva, estudiante, franja)
 
     def mover(self, id_reserva, nuevo_inicio, nuevo_fin):
-        # TODO 3: cambia la franja de una reserva existente, con las mismas
-        # dos reglas, sin comparar la reserva consigo misma.
-        # Si el id no existe: ValueError("reserva desconocida").
-        raise NotImplementedError
+        reserva = self._reservas.get(id_reserva)
+        if reserva is None:
+            raise ValueError("reserva desconocida")
+        franja = FranjaHoraria(self.fecha, nuevo_inicio, nuevo_fin)
+        self._validar(franja, reserva.estudiante, id_reserva)
+        reserva.franja = franja
 
     def cancelar(self, id_reserva):
-        # TODO 4: borra la reserva. Si el id no existe:
-        # ValueError("reserva desconocida").
-        raise NotImplementedError
+        if id_reserva not in self._reservas:
+            raise ValueError("reserva desconocida")
+        del self._reservas[id_reserva]
 
     def reservas(self):
-        # TODO 5: devuelve las reservas como una lista de tuplas
-        # (id, estudiante, franja), ordenada por hora de inicio. Nada de
-        # lo que devuelvas puede servir para cambiar el calendario desde
-        # afuera.
-        raise NotImplementedError
+        ordenadas = sorted(self._reservas.values(), key=lambda r: r.franja.inicio)
+        return [(r.id, r.estudiante, r.franja) for r in ordenadas]

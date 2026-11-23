@@ -51,6 +51,7 @@ class Recurso:
 
 
 class Reservable(Recurso):
+
     def __init__(self, nombre, tipo):
         super().__init__(nombre)
         self.tipo = tipo
@@ -59,18 +60,29 @@ class Reservable(Recurso):
     def reservar(self, id_reserva, estudiante, inicio, fin):
         self.calendario.reservar(id_reserva, estudiante, inicio, fin)
 
-    # TODO 1: buscar devuelve [self.nombre] si el tipo coincide y el
-    # calendario esta libre, o []. contar devuelve 1 si el tipo coincide,
-    # o 0.
+    def buscar(self, tipo, inicio, fin):
+        if self.tipo == tipo and self.calendario.esta_libre(inicio, fin):
+            return [self.nombre]
+        return []
 
-    # TODO 3 (hoja): encontrar devuelve self si el nombre coincide, o
-    # None.
+    def contar(self, tipo):
+        if self.tipo == tipo:
+            return 1
+        return 0
 
-    # TODO 4 (hoja): rutas devuelve [ruta + self.nombre] en los mismos
-    # casos en que buscar devuelve [self.nombre].
+    def encontrar(self, nombre):
+        if self.nombre == nombre:
+            return self
+        return None
+
+    def rutas(self, tipo, inicio, fin, ruta):
+        if self.tipo == tipo and self.calendario.esta_libre(inicio, fin):
+            return [ruta + self.nombre]
+        return []
 
 
 class Grupo(Recurso):
+
     def __init__(self, nombre):
         super().__init__(nombre)
         self.hijos = []
@@ -78,20 +90,52 @@ class Grupo(Recurso):
     def agregar(self, hijo):
         self.hijos.append(hijo)
 
-    # TODO 2: buscar junta lo que devuelve cada hijo; contar suma lo que
-    # cuenta cada hijo.
+    def buscar(self, tipo, inicio, fin):
+        resultado = []
 
-    # TODO 3 (compuesto): encontrar pregunta a cada hijo, en orden, y
-    # devuelve el primero que no sea None; si ninguno lo tiene, None.
+        for hijo in self.hijos:
+            resultado.extend(hijo.buscar(tipo, inicio, fin))
 
-    # TODO 4 (compuesto): rutas junta lo que devuelve cada hijo, pasandole
-    # ruta + self.nombre + " / ".
+        return resultado
+
+    def contar(self, tipo):
+        total = 0
+
+        for hijo in self.hijos:
+            total += hijo.contar(tipo)
+
+        return total
+
+    def encontrar(self, nombre):
+        if self.nombre == nombre:
+            return self
+
+        for hijo in self.hijos:
+            encontrado = hijo.encontrar(nombre)
+
+            if encontrado is not None:
+                return encontrado
+
+        return None
+
+    def rutas(self, tipo, inicio, fin, ruta):
+        resultado = []
+        nueva_ruta = ruta + self.nombre + " / "
+
+        for hijo in self.hijos:
+            resultado.extend(
+                hijo.rutas(tipo, inicio, fin, nueva_ruta)
+            )
+
+        return resultado
 
 
 def reservar_en(raiz, nombre, id_reserva, estudiante, inicio, fin):
     reservable = raiz.encontrar(nombre)
+
     if reservable is None:
         raise ValueError("recurso desconocido")
+
     reservable.reservar(id_reserva, estudiante, inicio, fin)
 
 
@@ -99,17 +143,21 @@ def armar_campus():
     complejo = Grupo("Complejo deportivo")
     complejo.agregar(Reservable("cancha-1", "cancha"))
     complejo.agregar(Reservable("cancha-2", "cancha"))
+
     bodega = Grupo("Bodega")
     bodega.agregar(Reservable("balon-1", "balon"))
     bodega.agregar(Reservable("balon-2", "balon"))
+
     complejo.agregar(bodega)
 
     piso_1 = Grupo("Piso 1")
     piso_1.agregar(Reservable("sala-101", "sala"))
     piso_1.agregar(Reservable("sala-102", "sala"))
+
     prestamos = Grupo("Prestamos")
     prestamos.agregar(Reservable("proyector-1", "proyector"))
     prestamos.agregar(Reservable("proyector-2", "proyector"))
+
     biblioteca = Grupo("Biblioteca")
     biblioteca.agregar(piso_1)
     biblioteca.agregar(prestamos)
@@ -117,17 +165,23 @@ def armar_campus():
     campus = Grupo("Campus Cumbaya")
     campus.agregar(complejo)
     campus.agregar(biblioteca)
+
     return campus
 
 
 if __name__ == "__main__":
     campus = armar_campus()
+
     reservar_en(campus, "proyector-1", "r-1", "ana", 18, 19)
     reservar_en(campus, "sala-101", "r-2", "beto", 18, 19)
+
     print("Proyectores libres de 18 a 19:", campus.buscar("proyector", 18, 19))
     print("Salas libres de 18 a 19:", campus.buscar("sala", 18, 19))
     print("Balones en el campus:", campus.contar("balon"))
+
     print("Donde hay un balon libre de 18 a 19:")
+
     for ruta in campus.rutas("balon", 18, 19, ""):
         print(" ", ruta)
+
     print("No existe:", campus.encontrar("proyector-9"))

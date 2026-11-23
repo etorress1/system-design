@@ -41,6 +41,102 @@ Esta vez no hay codigo de partida. Corre las pruebas con:
 
     pytest test_cancha_divisible_ejercicio3.py
 """
-
 from inventario_ejercicio2 import Recurso, Reservable
 from reservas import MAXIMO_HORAS_POR_ESTUDIANTE
+
+
+class CanchaDivisible(Recurso):
+
+    def __init__(self, nombre):
+        super().__init__(nombre)
+
+        self.mitades = [
+            Reservable(nombre + "-a", "media cancha"),
+            Reservable(nombre + "-b", "media cancha")
+        ]
+
+    def buscar(self, tipo, inicio, fin):
+        if tipo == "cancha":
+            if all(
+                mitad.calendario.esta_libre(inicio, fin)
+                for mitad in self.mitades
+            ):
+                return [self.nombre]
+
+            return []
+
+        if tipo == "media cancha":
+            resultado = []
+
+            for mitad in self.mitades:
+                resultado.extend(mitad.buscar(tipo, inicio, fin))
+
+            return resultado
+
+        return []
+
+    def contar(self, tipo):
+        if tipo == "cancha":
+            return 1
+
+        if tipo == "media cancha":
+            return 2
+
+        return 0
+
+    def encontrar(self, nombre):
+        if self.nombre == nombre:
+            return self
+
+        for mitad in self.mitades:
+            encontrado = mitad.encontrar(nombre)
+
+            if encontrado is not None:
+                return encontrado
+
+        return None
+
+    def rutas(self, tipo, inicio, fin, ruta):
+        if tipo == "cancha":
+            if self.buscar(tipo, inicio, fin):
+                return [ruta + self.nombre]
+
+            return []
+
+        if tipo == "media cancha":
+            nueva_ruta = ruta + self.nombre + " / "
+            resultado = []
+
+            for mitad in self.mitades:
+                resultado.extend(
+                    mitad.rutas(tipo, inicio, fin, nueva_ruta)
+                )
+
+            return resultado
+
+        return []
+
+    def reservar(self, id_reserva, estudiante, inicio, fin):
+        # Primero se valida que las dos mitades estén libres.
+        for mitad in self.mitades:
+            if not mitad.calendario.esta_libre(inicio, fin):
+                raise ValueError("franja ocupada")
+
+        
+        duracion = fin - inicio
+
+        for mitad in self.mitades:
+            if (
+                mitad.calendario.horas_de(estudiante) + duracion
+                > MAXIMO_HORAS_POR_ESTUDIANTE
+            ):
+                raise ValueError("limite de horas alcanzado")
+
+        
+        for mitad in self.mitades:
+            mitad.reservar(
+                id_reserva + "-" + mitad.nombre[-1],
+                estudiante,
+                inicio,
+                fin
+            )
